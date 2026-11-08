@@ -104,3 +104,17 @@ pytest                                  # 工具测试
 ```
 
 后端起来后，`http://127.0.0.1:8756/` 也能用浏览器调试前端 —— 只是正式交付走的是桌面窗口。
+
+## 常见问题
+
+**双击 exe 没反应 / 窗口闪退？**
+看日志：`%USERPROFILE%\.desktop-agent\app.log`（打包后没有控制台，一切信息都在这里）。
+
+**端口被占用？**
+默认自动找空闲端口（8756 起）。指定端口被占时会启动失败，换个 `--port` 即可。
+
+**Windows Defender 提示未知发布者？**
+PyInstaller 打包没有代码签名，属正常提示。点「更多信息 → 仍要运行」，或自己从源码 `pyinstaller build.spec` 打一个。
+
+**想换模型服务商？**
+右上角「设置」里改 Base URL 和模型名即可，任何 OpenAI 兼容接口都行（DeepSeek / 百炼 / Moonshot…）。Key 只写本机 `%USERPROFILE%\.desktop-agent\config.json`，不进仓库、不进前端。
