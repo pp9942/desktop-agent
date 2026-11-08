@@ -1,0 +1,41 @@
+name: build
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Test
+        run: pytest
+
+      - name: Build
+        run: pyinstaller build.spec --noconfirm
+
+      - name: Zip
+        run: Compress-Archive -Path dist/DesktopAgent/* -DestinationPath DesktopAgent-windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DesktopAgent-windows
+          path: DesktopAgent-windows.zip
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: DesktopAgent-windows.zip
