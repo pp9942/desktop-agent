@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Desktop Agent</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo"></span>
+      <span class="brand-name">Desktop Agent</span>
+      <span class="brand-sub" id="model-badge">—</span>
+    </div>
+    <div class="statusline">
+      <span class="pill" id="mcp-badge" title="MCP server 状态">MCP —</span>
+      <span class="pill" id="conn-badge"><i class="led"></i><span id="conn-text">连接中</span></span>
+      <button class="ghost" id="btn-reset" title="清空当前会话">新会话</button>
+      <button class="ghost" id="btn-settings" title="配置模型与 Key">设置</button>
+      <button class="danger" id="btn-stop" disabled>停止</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="explorer">
+      <div class="panel-head">
+        <span>资源管理器</span>
+        <button class="icon" id="btn-refresh" title="刷新">⟳</button>
+      </div>
+      <div class="tree" id="tree"></div>
+      <div class="explorer-foot" id="workspace-path" title="工作目录"></div>
+    </aside>
+
+    <section class="workbench">
+      <div class="tabs">
+        <button class="tab active" data-tab="code">代码</button>
+        <button class="tab" data-tab="diff">变更</button>
+        <span class="tab-hint" id="tab-hint"></span>
+      </div>
+      <div class="editor" id="editor">
+        <div class="placeholder">从左边选一个文件</div>
+      </div>
+    </section>
+
+    <section class="chat">
+      <div class="panel-head">
+        <span>对话</span>
+        <span class="step-indicator" id="step-indicator"></span>
+      </div>
+      <div class="messages" id="messages">
+        <div class="hint-card">
+          <p>这个窗口里跑的是一个循环：读文件 → 改代码 → 跑测试 → 看结果。</p>
+          <p class="hint-sub">试试：「mean 对空列表处理有问题，改掉并跑测试」</p>
+        </div>
+      </div>
+      <form class="composer" id="composer">
+        <textarea id="input" rows="1" placeholder="说点什么…（Enter 发送，Shift + Enter 换行）"></textarea>
+        <button type="submit" id="btn-send">发送</button>
+      </form>
+    </section>
+  </main>
+
+  <div class="modal" id="settings" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <span>模型设置</span>
+        <button class="icon" id="settings-close" title="关闭">×</button>
+      </div>
+      <label class="field">
+        <span>API Key</span>
+        <input id="set-key" type="password" autocomplete="off" placeholder="sk-…" />
+      </label>
+      <label class="field">
+        <span>Base URL</span>
+        <input id="set-base" type="text" spellcheck="false" placeholder="https://api.deepseek.com/v1" />
+      </label>
+      <label class="field">
+        <span>模型</span>
+        <input id="set-model" type="text" spellcheck="false" placeholder="deepseek-chat" />
+      </label>
+      <p class="modal-tip">Key 只写在本机 <code>~/.desktop-agent/config.json</code>，不会进仓库，也不会发给前端之外的任何地方。</p>
+      <div class="modal-foot">
+        <button class="ghost" id="settings-cancel">取消</button>
+        <button class="primary" id="settings-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
