@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "notes": {
+      "command": "python",
+      "args": ["mcp_servers/notes_server/server.py"],
+      "enabled": true,
+      "bundled": true,
+      "env": {}
+    }
+  }
+}

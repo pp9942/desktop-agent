@@ -1,0 +1,22 @@
+[project]
+name = "desktop-agent"
+version = "1.0.0"
+description = "一个能双击打开的桌面编程智能体：四个工具 + MCP + 可中断的循环"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi==0.162.0",
+    "uvicorn==0.54.0",
+    "httpx==0.28.1",
+    "mcp==2.3.0",
+    "pywebview==6.2.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.2.0",
+    "pyinstaller==6.22.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,0 +1,24 @@
+# 密钥：绝不入库
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# 打包产物
+build/
+dist/
+*.spec.bak
+
+# 运行产物
+workspace/
+!workspace/.gitkeep
+*.log
+
+# 系统
+.DS_Store
+Thumbs.db
