@@ -108,9 +108,24 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=0, help="固定端口（默认自动选择）")
     parser.add_argument("--workspace", type=str, default="", help="工作目录")
     parser.add_argument("--mock", action="store_true", help="离线演示模式（不需要 API Key）")
+    parser.add_argument(
+        "command",
+        nargs="?",
+        choices=["inspect"],
+        help="inspect：打印 skill_report.json 的全部数字（作业验收用）",
+    )
     args = parser.parse_args()
     ensure_stdio()
     setup_logging()
+
+    if args.command == "inspect":
+        import json
+
+        from agent.skills import get_manager
+
+        cfg = Config.load(args.workspace or None)
+        print(json.dumps(get_manager(cfg.skills_root, cfg.skills_enabled).report(), ensure_ascii=False, indent=2))
+        return 0
 
     cfg = Config.load(args.workspace or None)
     if args.mock:
