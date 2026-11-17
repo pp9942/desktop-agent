@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
+import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -145,6 +146,11 @@ def create_app(cfg: Config | None = None) -> FastAPI:
 
     @app.websocket("/ws")
     async def websocket(websocket: WebSocket):
+        # 可选鉴权：设置了 AGENT_WS_TOKEN 后，连接必须带 ?token=（微信小程序走公网时用）
+        expected = os.environ.get("AGENT_WS_TOKEN", "").strip()
+        if expected and websocket.query_params.get("token") != expected:
+            await websocket.close(code=4401, reason="token invalid")
+            return
         await websocket.accept()
         lock = asyncio.Lock()
         send_failed = False

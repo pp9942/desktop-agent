@@ -13,6 +13,7 @@ a = Analysis(
     datas=[
         ("ui", "ui"),
         ("mcp_servers", "mcp_servers"),
+        ("skills", "skills"),
         ("mcp.json", "."),
         (".env.example", "."),
     ],

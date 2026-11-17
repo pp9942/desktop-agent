@@ -1,0 +1,4 @@
+{
+  "desc": "本地开发演示，不对外收录",
+  "rules": [{ "action": "disallow", "page": "*" }]
+}

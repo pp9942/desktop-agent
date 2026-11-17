@@ -1,0 +1,12 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "Desktop Agent",
+    "navigationBarBackgroundColor": "#0d0f12",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0d0f12",
+    "backgroundTextStyle": "dark"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

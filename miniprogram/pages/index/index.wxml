@@ -1,0 +1,50 @@
+<view class="page">
+  <!-- 顶部：连接状态 + 服务地址 -->
+  <view class="bar">
+    <view class="dot {{connected ? 'ok' : 'bad'}}"></view>
+    <text class="status">{{statusText}}</text>
+    <text class="model" wx:if="{{model}}">{{model}} · MCP {{mcpOk ? '已连接' : '未连'}}</text>
+    <view class="actions">
+      <text class="btn" bindtap="stop" wx:if="{{busy}}">停止</text>
+      <text class="btn warn" bindtap="reset">清空</text>
+    </view>
+  </view>
+  <view class="addr">
+    <input class="addr-input" value="{{url}}" bindinput="onUrlInput" placeholder="ws://127.0.0.1:8756/ws" />
+    <text class="btn" bindtap="connect">连接</text>
+  </view>
+
+  <!-- 消息流 -->
+  <scroll-view class="chat" scroll-y scroll-into-view="{{scrollInto}}">
+    <view wx:for="{{msgs}}" wx:key="id" id="{{item.id}}" class="msg {{item.role}}">
+      <text class="who">{{item.role === 'user' ? '你' : '助手'}}</text>
+      <text class="bubble {{item.role}}">{{item.text}}</text>
+    </view>
+
+    <!-- 工具卡片 -->
+    <view wx:for="{{tools}}" wx:key="id" class="tool {{item.ok === true ? 'ok' : item.ok === false ? 'fail' : 'run'}}">
+      <view class="tool-head">
+        <text class="tool-name">{{item.name}}</text>
+        <text class="tool-state" wx:if="{{item.ok === null}}">运行中…</text>
+        <text class="tool-state" wx:else>{{item.ok ? '成功' : '失败'}} · {{item.duration}}s</text>
+      </view>
+      <text class="tool-args" wx:if="{{item.args}}">{{item.args}}</text>
+      <text class="tool-summary" wx:if="{{item.summary}}">{{item.summary}}</text>
+    </view>
+    <view id="chat-bottom" class="bottom-pad"></view>
+  </scroll-view>
+
+  <!-- 输入区 -->
+  <view class="input-bar">
+    <input
+      class="input"
+      value="{{input}}"
+      bindinput="onInput"
+      bindconfirm="send"
+      confirm-type="send"
+      placeholder="{{busy ? '跑着呢…' : '给智能体一个任务'}}"
+      disabled="{{busy}}"
+    />
+    <button class="send" size="mini" bindtap="send" disabled="{{busy || !connected}}">发送</button>
+  </view>
+</view>

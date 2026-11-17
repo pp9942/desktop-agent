@@ -71,10 +71,10 @@ def wait_until_up(port: int, timeout: float = 30.0) -> bool:
     return False
 
 
-def run_server(port: int, cfg: Config) -> threading.Thread:
+def run_server(port: int, cfg: Config, host: str = "127.0.0.1") -> threading.Thread:
     config = uvicorn.Config(
         create_app(cfg),
-        host="127.0.0.1",
+        host=host,
         port=port,
         log_level="warning",
         access_log=False,
@@ -106,6 +106,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Desktop Agent")
     parser.add_argument("--headless", action="store_true", help="只启动后端，不开窗口")
     parser.add_argument("--port", type=int, default=0, help="固定端口（默认自动选择）")
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="监听地址；小程序真机预览时用 0.0.0.0 让手机连局域网",
+    )
     parser.add_argument("--workspace", type=str, default="", help="工作目录")
     parser.add_argument("--mock", action="store_true", help="离线演示模式（不需要 API Key）")
     parser.add_argument(
@@ -133,8 +139,8 @@ def main() -> int:
     cfg.ensure_workspace()
 
     port = args.port or find_port()
-    log.info("starting backend on 127.0.0.1:%s (workspace=%s, mock=%s)", port, cfg.workspace, cfg.mock)
-    run_server(port, cfg)
+    log.info("starting backend on %s:%s (workspace=%s, mock=%s)", args.host, port, cfg.workspace, cfg.mock)
+    run_server(port, cfg, args.host)
 
     if not wait_until_up(port):
         log.error("backend failed to listen on port %s", port)
