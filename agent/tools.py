@@ -41,10 +41,19 @@ class ToolError(Exception):
 # 工作区：所有路径都被钉死在这个目录里
 # --------------------------------------------------------------------------- #
 class Workspace:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, read_only_roots: tuple[Path, ...] = ()):
         self.root = Path(root).resolve()
+        # 只读白名单：read 可以出工作区（比如读技能正文），write/edit 永远不行
+        self.read_only_roots = tuple(Path(p).resolve() for p in read_only_roots)
 
     def resolve(self, raw: str) -> Path:
+        return self._resolve(raw, allow_readonly=False)
+
+    def resolve_for_read(self, raw: str) -> Path:
+        """read 专用：工作区 + 只读白名单都放行，其余照旧拒绝。"""
+        return self._resolve(raw, allow_readonly=True)
+
+    def _resolve(self, raw: str, allow_readonly: bool) -> Path:
         if raw is None or str(raw).strip() == "":
             raise ToolError("path 不能为空。请给出相对于工作区的路径，例如 src/app.py")
         candidate = Path(str(raw).strip())
@@ -55,10 +64,14 @@ class Workspace:
         except OSError as exc:
             raise ToolError(f"路径无法解析：{raw}（{exc}）") from exc
         if resolved != self.root and self.root not in resolved.parents:
-            raise ToolError(
-                f"拒绝访问工作区之外的路径：{raw}\n"
-                f"工作区是 {self.root}。请改用这个目录内的路径。"
-            )
+            if not (
+                allow_readonly
+                and any(resolved == r or r in resolved.parents for r in self.read_only_roots)
+            ):
+                raise ToolError(
+                    f"拒绝访问工作区之外的路径：{raw}\n"
+                    f"工作区是 {self.root}。请改用这个目录内的路径。"
+                )
         return resolved
 
     def relative(self, path: Path) -> str:
@@ -76,7 +89,7 @@ def _numbered(lines: list[str], start: int, width: int) -> str:
 
 
 def tool_read(ws: Workspace, path: str, offset: int = 1, limit: int = 200) -> ToolResult:
-    target = ws.resolve(path)
+    target = ws.resolve_for_read(path)  # 技能正文在工作区外，read 是唯一放行的通道
     if not target.exists():
         raise ToolError(
             f"文件不存在：{path}\n"

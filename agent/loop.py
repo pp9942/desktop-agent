@@ -17,6 +17,7 @@ from typing import Any, Awaitable, Callable
 from .config import Config
 from .llm import LLMError
 from .mcp_client import McpManager, McpError, render_mcp_result
+from .skills import get_manager as get_skill_manager
 from .tools import Tool, ToolError, ToolResult, Workspace
 
 Emit = Callable[[dict], Awaitable[None]]
@@ -203,7 +204,11 @@ class AgentLoop:
 
     # ------------------------------------------------------------------ #
     async def _ask(self, schemas: list[dict]) -> dict:
-        payload = [{"role": "system", "content": SYSTEM_PROMPT.format(workspace=self.cfg.workspace)}]
+        system = SYSTEM_PROMPT.format(workspace=self.cfg.workspace)
+        catalog = get_skill_manager(self.cfg.skills_root, self.cfg.skills_enabled).catalog_text()
+        if catalog:
+            system += "\n\n" + catalog
+        payload = [{"role": "system", "content": system}]
         payload.extend(self.messages)
 
         async def on_delta(text: str) -> None:

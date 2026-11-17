@@ -33,7 +33,7 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     async def lifespan(app: FastAPI):
         cfg.ensure_workspace()
         seed_workspace(cfg.workspace)
-        ws = Workspace(cfg.workspace)
+        ws = Workspace(cfg.workspace, read_only_roots=(resource_dir() / "skills",))
         mcp = McpManager(resource_dir() / "mcp.json", resource_dir())
         await mcp.start()
 

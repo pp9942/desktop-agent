@@ -76,6 +76,10 @@ class Config:
     context_budget_chars: int = 60_000
     keep_recent_messages: int = 8
 
+    # —— 技能系统（增量 A）：ENABLE_SKILLS=0 时零注入，退回 v1.0 ——
+    skills_enabled: bool = True
+    skills_root: Path = field(default_factory=lambda: resource_dir() / "skills")
+
     @classmethod
     def load(cls, workspace: str | None = None) -> "Config":
         # 用户目录优先：打包后的 _MEIPASS 是只读的
@@ -95,6 +99,9 @@ class Config:
             max_steps=int(os.environ.get("AGENT_MAX_STEPS", "20")),
             step_timeout=float(os.environ.get("AGENT_STEP_TIMEOUT", "180")),
             bash_timeout=int(os.environ.get("AGENT_BASH_TIMEOUT", "60")),
+            skills_enabled=os.environ.get("ENABLE_SKILLS", "1").lower()
+            not in {"0", "false", "no"},
+            skills_root=resource_dir() / "skills",
         )
 
     def ensure_workspace(self) -> None:
