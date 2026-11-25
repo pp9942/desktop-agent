@@ -127,10 +127,14 @@ def main() -> int:
     if args.command == "inspect":
         import json
 
+        from agent.report import build_custom_report
         from agent.skills import get_manager
 
         cfg = Config.load(args.workspace or None)
-        print(json.dumps(get_manager(cfg.skills_root, cfg.skills_enabled).report(), ensure_ascii=False, indent=2))
+        report = get_manager(cfg.skills_root, cfg.skills_enabled).report()
+        # 定制层（增量 B）：同一份 inspect 一并打印 custom_report 的四个字段
+        report["custom"] = build_custom_report(cfg)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0
 
     cfg = Config.load(args.workspace or None)
