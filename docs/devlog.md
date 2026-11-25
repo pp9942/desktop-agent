@@ -53,3 +53,15 @@
 
 - 11 月 25 日：AGENTS.md 双层注入（全局 + 项目，带 500 token 预算）。
 - 后续：三条 hook、只读 reviewer 子 agent、custom_report.json 验收。
+- 11 月 25 日：三条 hook（危险命令/敏感文件拦截并给替代方案、写后自动跑
+  unittest），AGENT_HOOKS=0 全部失效；拦截计入 custom_report 的 denied 字段。
+- 11 月 25 日：只读 reviewer 子 agent（工具表仅 read，结构性只读），
+  会话完成且文件有改动时自动触发评审。
+- 11 月 25 日：app.inspect 输出 custom_report 四字段
+  （agents_md / denied / autotest / reviewer），数字全部来自真实调用。
+  及格线实测：AGENTS.md ≤500 token 达标；拦截 2 次均带替代方案；
+  自动测试 Ran 5 tests OK。tag v1.2。
+- 11 月 25 日：增量 C 常驻能力（四选二选做）——崩溃续跑：agent 循环
+  每步落盘，kill -9 后重启可从断点继续（tests/test_rescue.py 子进程
+  端到端验证，不重放已完成步骤）；完成通知：正常完成时 notify 事件 +
+  Windows 提示音，手动中断不响。tag v1.3。
