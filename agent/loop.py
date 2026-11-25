@@ -18,6 +18,7 @@ from .config import Config
 from .llm import LLMError
 from .mcp_client import McpManager, McpError, render_mcp_result
 from .custom import load_agents_md
+from .hooks import HookManager
 from .skills import get_manager as get_skill_manager
 from .tools import Tool, ToolError, ToolResult, Workspace
 
@@ -118,6 +119,7 @@ class AgentLoop:
         self.mcp = mcp
         self.emit = emit
         self.store = store
+        self.hooks = HookManager(cfg)
         self.stop_event = asyncio.Event()
         self.messages: list[dict] = []
         self.steps = 0
@@ -240,8 +242,33 @@ class AgentLoop:
 
         await self.emit({"type": "tool_start", "id": call_id, "name": name, "args": args})
         started = time.time()
+
+        # 定制层：hook 预检——危险命令/敏感文件在这里被拦下，附替代方案回给模型
+        verdict = self.hooks.pre_execute(name, args)
+        if not verdict.allowed:
+            text = f"{verdict.reason}\n替代方案：{verdict.alternative}"
+            result = ToolResult(ok=False, text=text, meta={"hook_blocked": True})
+            await self.emit(
+                {
+                    "type": "tool_end",
+                    "id": call_id,
+                    "name": name,
+                    "ok": False,
+                    "duration": 0.0,
+                    "summary": verdict.reason,
+                }
+            )
+            self.messages.append(self._tool_message(call_id, name, result))
+            return
+
         result = await self._execute(name, args)
         duration = time.time() - started
+
+        # 定制层：写后自动测——附注拼进工具结果，模型无需自己想起跑测试
+        note = self.hooks.post_execute(name, args, result.ok)
+        if note:
+            result.text = f"{result.text}\n\n{note}"
+
         await self._finish_tool(call_id, name, args, result, duration)
         self.messages.append(self._tool_message(call_id, name, result))
 
