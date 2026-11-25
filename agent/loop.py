@@ -19,6 +19,7 @@ from .llm import LLMError
 from .mcp_client import McpManager, McpError, render_mcp_result
 from .custom import load_agents_md
 from .hooks import HookManager
+from .reviewer import Reviewer
 from .skills import get_manager as get_skill_manager
 from .tools import Tool, ToolError, ToolResult, Workspace
 
@@ -120,10 +121,12 @@ class AgentLoop:
         self.emit = emit
         self.store = store
         self.hooks = HookManager(cfg)
+        self.reviewer = Reviewer(cfg, {k: v for k, v in tools.items() if k == "read"})
         self.stop_event = asyncio.Event()
         self.messages: list[dict] = []
         self.steps = 0
         self.tool_chars = 0
+        self.last_review: str | None = None
 
     # ------------------------------------------------------------------ #
     def request_stop(self) -> None:
@@ -140,6 +143,7 @@ class AgentLoop:
         self.stop_event.clear()
         self.steps = 0
         self.tool_chars = 0
+        self._changes: list[dict] = []
 
         if not self.messages:
             self.messages = []
@@ -199,6 +203,16 @@ class AgentLoop:
                     "message": f"到达步数上限（{self.cfg.max_steps} 步）已停止。把任务拆小，或调大 AGENT_MAX_STEPS。",
                 }
             )
+
+        # 定制层：本轮有文件改动且正常完成时，触发只读评审
+        if reason == "finished" and self._changes:
+            try:
+                review = await self.reviewer.review(self._changes, self.client)
+            except Exception as exc:  # 评审失败不拖垮主流程
+                review = f"（评审员出错：{type(exc).__name__}: {exc}）"
+            if review:
+                self.last_review = review
+                await self.emit({"type": "review", "text": review})
 
         if self.store:
             self.store.save(self.messages, {"steps": self.steps})
@@ -273,6 +287,7 @@ class AgentLoop:
         self.messages.append(self._tool_message(call_id, name, result))
 
         if result.diff:
+            self._changes.append({"path": result.meta.get("path", ""), "diff": result.diff})
             await self.emit({"type": "file_changed", "path": result.meta.get("path", ""), "diff": result.diff})
         for image in result.images[:2]:
             self.messages.append(
