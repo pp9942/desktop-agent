@@ -60,8 +60,11 @@ def create_app(cfg: Config | None = None) -> FastAPI:
 
     @app.get("/api/state")
     async def state():
+        saved_meta = (app.state.store.load() or {}).get("meta") or {}
         return {
             "config": cfg.public(),
+            "unfinished_session": bool((app.state.store.load() or {}).get("messages"))
+            and not saved_meta.get("finished", True),
             "tools": [
                 {"name": t.name, "description": t.description.splitlines()[0]}
                 for t in app.state.tools.values()
@@ -174,7 +177,16 @@ def create_app(cfg: Config | None = None) -> FastAPI:
             store=app.state.store,
         )
         history = loop.restore()
-        await websocket.send_json({"type": "hello", "config": cfg.public(), "mcp": app.state.mcp.status()})
+        saved_meta = (app.state.store.load() or {}).get("meta") or {}
+        resumable = bool(history) and not saved_meta.get("finished", True)
+        await websocket.send_json(
+            {
+                "type": "hello",
+                "config": cfg.public(),
+                "mcp": app.state.mcp.status(),
+                "resumable": resumable,  # 上次会话没跑完（崩溃/断电），可以续
+            }
+        )
         await websocket.send_json({"type": "history", "messages": public_history(history)})
 
         running: asyncio.Task | None = None
@@ -193,7 +205,13 @@ def create_app(cfg: Config | None = None) -> FastAPI:
                     if running and not running.done():
                         await emit({"type": "notice", "message": "上一轮还没结束，先点停止。"})
                         continue
-                    loop.client = app.state.client  # 设置可能刚被改过
+                    if data.get("resume"):
+                        # 增量 C：崩溃续跑 —— 从上次落盘的步数继续（mock 剧本用偏移对齐）
+                        steps_done = int((app.state.store.load().get("meta") or {}).get("steps") or 0)
+                        loop.client = build_client(cfg, start_step=steps_done)
+                        await emit({"type": "notice", "message": f"已恢复上次会话（{steps_done} 步已完成），继续执行。"})
+                    else:
+                        loop.client = app.state.client  # 设置可能刚被改过
                     running = asyncio.create_task(_guarded(loop.run(text), emit))
 
                 elif kind == "stop":

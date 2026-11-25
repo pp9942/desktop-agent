@@ -156,9 +156,9 @@ class MockClient:
 
     name = "mock-demo"
 
-    def __init__(self, cfg: Config):
+    def __init__(self, cfg: Config, start_step: int = 0):
         self.cfg = cfg
-        self.step = 0
+        self.step = start_step  # 崩溃续跑：从上次完成的步数继续剧本
 
     async def _say(self, on_delta, text: str) -> None:
         for i in range(0, len(text), 6):
@@ -224,5 +224,5 @@ def _call(text: str, name: str, args: dict) -> dict:
     }
 
 
-def build_client(cfg: Config):
-    return MockClient(cfg) if cfg.mock else LLMClient(cfg)
+def build_client(cfg: Config, start_step: int = 0):
+    return MockClient(cfg, start_step=start_step) if cfg.mock else LLMClient(cfg)

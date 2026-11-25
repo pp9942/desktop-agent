@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import sys
 import time
 from pathlib import Path
 from typing import Any, Awaitable, Callable
@@ -191,6 +192,10 @@ class AgentLoop:
                 break
 
             await self._compress()
+
+            # 增量 C：每步落盘 —— kill -9 最多丢掉当前正在执行的那一步，前面的全部保留
+            if self.store:
+                self.store.save(self.messages, {"steps": self.steps, "finished": False})
         else:
             reason = "max_steps"
 
@@ -215,8 +220,19 @@ class AgentLoop:
                 await self.emit({"type": "review", "text": review})
 
         if self.store:
-            self.store.save(self.messages, {"steps": self.steps})
+            self.store.save(self.messages, {"steps": self.steps, "finished": reason == "finished", "reason": reason})
         await self.emit({"type": "done", "reason": reason, "steps": self.steps})
+
+        # 增量 C：完成通知 —— 只有正常跑完才响，手动中断不算
+        if reason == "finished":
+            await self.emit({"type": "notify", "title": "任务完成", "text": f"本轮任务已完成，共 {self.steps} 步。"})
+            try:
+                if sys.platform == "win32":
+                    import winsound
+
+                    await asyncio.to_thread(winsound.MessageBeep, winsound.MB_OK)
+            except Exception:
+                pass  # 通知失败不影响任务本身
         return reason
 
     # ------------------------------------------------------------------ #

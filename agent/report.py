@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from .config import Config
+from .config import Config, user_dir
 from .custom import load_agents_md
 from .hooks import HookManager
 
@@ -64,6 +64,19 @@ def build_custom_report(cfg: Config) -> dict:
         "enabled_note": "reviewer 随会话触发；inspect 只报告构建状态",
         "structured_readonly": True,
         "tools": ["read"],
+    }
+
+    # —— persistence（增量 C）：每步落盘能力 + 上次会话的落盘状态 ——
+    from .loop import SessionStore
+
+    store = SessionStore(user_dir() / "last_session.json")
+    meta = (store.load() or {}).get("meta") or {}
+    report["persistence"] = {
+        "per_step_save": True,
+        "resume_supported": True,
+        "last_session_finished": bool(meta.get("finished", True)),
+        "last_session_steps": int(meta.get("steps") or 0),
+        "note": "及格线场景（kill -9 后续跑）由 tests/test_rescue.py 端到端验证",
     }
 
     return report
