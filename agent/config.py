@@ -23,8 +23,10 @@ def resource_dir() -> Path:
 
 
 def user_dir() -> Path:
-    """可写目录。打包后不能往 exe 同级写（可能只读）。"""
-    path = Path.home() / f".{APP_NAME}"
+    """可写目录。打包后不能往 exe 同级写（可能只读）。
+    设 AGENT_DATA_DIR 可整体搬到别处（课堂演示用它把数据隔离进 .demo-data）。"""
+    root = os.environ.get("AGENT_DATA_DIR", "").strip()
+    path = Path(root) if root else Path.home() / f".{APP_NAME}"
     path.mkdir(parents=True, exist_ok=True)
     return path
 
