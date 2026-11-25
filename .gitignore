@@ -22,3 +22,6 @@ workspace/
 # 系统
 .DS_Store
 Thumbs.db
+
+# 小程序本地私有配置（每人打开工具时自动生成，因人而异）
+miniprogram/project.private.config.json
