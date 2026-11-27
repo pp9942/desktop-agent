@@ -6,9 +6,8 @@
 |------|------|----------|----------|
 | 魏乐文 | MA2608017 | 工具层：read / write / edit / bash 语义与护栏（`agent/tools.py`）；技能系统：目录注入、按需加载（`agent/skills.py`、`skills/`） | 工具护栏设计、技能 disclosure_ratio 5.91 |
 | 庄卓 | MA2608018 | MCP：stdio 客户端与自建 notes server（`agent/mcp_client.py`、`mcp_servers/`）；上台演示与讲解（演示流程设计、彩排、备用录屏） | MCP 与内置工具的区分、蓝徽章演示、整体讲解 |
-| 王馨悦 | MA2608020 | 界面：三栏布局、工具卡片、diff 视图（`ui/`）；微信小程序端联调验证（`miniprogram/`） | 现场操作演示：发需求、中断、切标签 |
-| 凤咏婧 | MA2608021 | 打包与会话持久化（`build.spec`、`SessionStore`）；常驻能力：每步落盘、崩溃续跑、完成通知（`agent/loop.py`、`agent/report.py`）；定制层之安全 hook 与拦截记录（`agent/hooks.py`） | 打包方案讲解、hook 拦截与崩溃续跑演示 |
-| 魏乐文、凤咏婧 共同 | — | 定制层共同负责：魏乐文主导 AGENTS.md 双层注入与只读 reviewer（`agent/custom.py`、`agent/reviewer.py`），凤咏婧主导 hook 拦截（`agent/hooks.py`） | — |
+| 王馨悦 | MA2608020 | 界面：三栏布局、工具卡片、diff 视图（`ui/`）；定制层：AGENTS.md 双层注入、安全 hook、只读 reviewer（`agent/custom.py`、`agent/hooks.py`、`agent/reviewer.py`） | 现场操作演示：发需求、中断、切标签；AGENTS 注入与 hook 拦截讲解 |
+| 凤咏婧 | MA2608021 | 打包与会话持久化（`build.spec`、`SessionStore`）；常驻能力：每步落盘、崩溃续跑、完成通知（`agent/loop.py`、`agent/report.py`）；微信小程序端联调验证（`miniprogram/`） | 打包方案讲解、崩溃续跑演示、小程序演示 |
 
 ## 1. 它是什么
 
