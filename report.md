@@ -1,13 +1,13 @@
 # 大作业报告：Desktop Agent
 
-**小组成员与分工**：
+**小组成员与分工**（每人负责一个基础模块 + 一个后续增量模块，份量相当；测试、文档、演示准备由全组共同完成）：
 
-| 成员 | 学号 | 负责模块 | 现场讲解 |
-|------|------|----------|----------|
-| 魏乐文 | MA2608017 | 工具层：read / write / edit / bash 语义与护栏（`agent/tools.py`） | edit 唯一性校验、bash 超时与截断、循环步数护栏 |
-| 庄卓 | MA2608018 | MCP：stdio 客户端与自建 notes server（`agent/mcp_client.py`、`mcp_servers/`） | MCP 与内置工具的区分、蓝徽章演示 |
-| 王馨悦 | MA2608020 | 界面：三栏布局、工具卡片、diff 视图（`ui/`） | 现场操作演示：发需求、中断、切标签 |
-| 凤咏婧 | MA2608021 | 打包与会话持久化（`build.spec`、`SessionStore`） | 打包方案讲解、trace 运行记录讲解 |
+| 成员 | 学号 | 基础模块（v1.0） | 增量模块（v1.1–v1.3） |
+|------|------|------------------|----------------------|
+| 魏乐文 | MA2608017 | 工具层：read / write / edit / bash 语义与护栏（`agent/tools.py`） | 定制层：AGENTS.md 双层注入、安全 hook、只读 reviewer（`agent/custom.py`、`agent/hooks.py`、`agent/reviewer.py`） |
+| 庄卓 | MA2608018 | MCP：stdio 客户端与自建 notes server（`agent/mcp_client.py`、`mcp_servers/`） | 技能系统：目录注入、按需加载、触发试验（`agent/skills.py`、`skills/`） |
+| 王馨悦 | MA2608020 | 界面：三栏布局、工具卡片、diff 视图（`ui/`） | 微信小程序端：事件流消费与界面（`miniprogram/`） |
+| 凤咏婧 | MA2608021 | 打包与会话持久化（`build.spec`、`SessionStore`） | 常驻能力：崩溃续跑的每步落盘与断点恢复、完成通知（`agent/loop.py`、`agent/report.py`） |
 
 ## 1. 它是什么
 
